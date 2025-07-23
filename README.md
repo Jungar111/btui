@@ -10,6 +10,19 @@ A Terminal User Interface (TUI) for managing Bluetooth devices through bluetooth
 
 ## Installation
 
+### Quick Install (Recommended)
+
+```bash
+# Clone the repository
+git clone <repository-url>
+cd btui
+
+# Run the install script (builds and installs to /usr/local/bin)
+./install.sh
+```
+
+### Manual Installation
+
 ```bash
 # Clone the repository
 git clone <repository-url>
@@ -43,8 +56,8 @@ Select and connect to a Bluetooth device:
 
 ## Requirements
 
-- Go 1.19 or later
-- `bluetoothctl` command available in PATH
+- Go 1.24 or later
+- `bluetoothctl` command available in PATH (install with `sudo apt install bluez-utils` on Ubuntu/Debian or `sudo dnf install bluez` on Fedora)
 - Linux system with Bluetooth support
 
 ## Architecture
