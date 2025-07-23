@@ -1,4 +1,4 @@
-package connect
+package scan
 
 import (
 	"fmt"
@@ -8,17 +8,17 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// New creates a new cobra command for connecting to devices
+// New creates a new cobra command for scanning devices
 func New() *cobra.Command {
 	c := &cobra.Command{}
-	c.Use = "connect"
-	c.Short = "Connect to a Bluetooth device"
-	c.Long = "Select and connect to a Bluetooth device"
+	c.Use = "scan"
+	c.Short = "Scan for and connect to Bluetooth devices"
+	c.Long = "Scan for nearby Bluetooth devices and allow selection and connection"
 	c.Run = run
 	return c
 }
 
-// run executes the connect command
+// run executes the scan command
 func run(cmd *cobra.Command, args []string) {
 	m := NewModel()
 

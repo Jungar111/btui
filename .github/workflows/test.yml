@@ -1,0 +1,32 @@
+name: Test
+
+on:
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Go
+      uses: actions/setup-go@v4
+      with:
+        go-version: '1.21'
+    
+    - name: Tidy dependencies
+      run: go mod tidy
+    
+    - name: Format code
+      run: go fmt ./...
+    
+    - name: Vet code
+      run: go vet ./...
+    
+    - name: Run tests
+      run: go test ./...
+    
+    - name: Build
+      run: go build -o dist/btui .

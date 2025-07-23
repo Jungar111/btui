@@ -1,9 +1,11 @@
 package bluetooth
 
 import (
+	"context"
 	"fmt"
 	"os/exec"
 	"strings"
+	"time"
 
 	tea "github.com/charmbracelet/bubbletea"
 )
@@ -11,11 +13,16 @@ import (
 // FetchDevicesCmd returns a command that scans for Bluetooth devices
 func FetchDevicesCmd() tea.Cmd {
 	return func() tea.Msg {
+		// Create a context with timeout to prevent hanging
+		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+		defer cancel()
+
 		// Fetch all devices
-		allDevicesCmd := exec.Command("bluetoothctl", "devices")
-		allDevicesOutput, err := allDevicesCmd.Output()
+		allDevicesCmd := exec.CommandContext(ctx, "bluetoothctl", "devices")
+		allDevicesOutput, err := allDevicesCmd.CombinedOutput()
 		if err != nil {
-			return DevicesMsg{Err: fmt.Errorf("issue with bluetoothctl devices: %w", err)}
+			// Include the command output in the error for better debugging
+			return DevicesMsg{Err: fmt.Errorf("issue with bluetoothctl devices: %w (output: %s)", err, string(allDevicesOutput))}
 		}
 
 		// Split output into lines and filter empty ones
@@ -27,19 +34,21 @@ func FetchDevicesCmd() tea.Cmd {
 			}
 		}
 
-		// Fetch connected devices
-		connectedDevicesCmd := exec.Command("bluetoothctl", "devices", "Connected")
-		connectedDevicesOutput, err := connectedDevicesCmd.Output()
-		if err != nil {
-			return DevicesMsg{Err: fmt.Errorf("issue with bluetoothctl devices Connected: %w", err)}
-		}
-
-		// Split output into lines and filter empty ones
-		connectedDevicesLines := strings.Split(strings.TrimSpace(string(connectedDevicesOutput)), "\n")
+		// Fetch connected devices - if this fails, we'll continue with empty connected list
+		connectedDevicesCmd := exec.CommandContext(ctx, "bluetoothctl", "devices", "Connected")
+		connectedDevicesOutput, err := connectedDevicesCmd.CombinedOutput()
 		var connectedDevices []string
-		for _, line := range connectedDevicesLines {
-			if strings.TrimSpace(line) != "" {
-				connectedDevices = append(connectedDevices, line)
+		if err != nil {
+			// Log the error but don't fail the entire operation
+			// Some systems might not support the "Connected" filter
+			connectedDevices = []string{}
+		} else {
+			// Split output into lines and filter empty ones
+			connectedDevicesLines := strings.Split(strings.TrimSpace(string(connectedDevicesOutput)), "\n")
+			for _, line := range connectedDevicesLines {
+				if strings.TrimSpace(line) != "" {
+					connectedDevices = append(connectedDevices, line)
+				}
 			}
 		}
 

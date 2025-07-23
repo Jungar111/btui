@@ -9,13 +9,13 @@ import (
 
 // Model represents the main menu state
 type Model struct {
-	List        list.Model
-	Choice      *ActionType
-	Quitting    bool
-	Width       int
-	Height      int
-	SubProgram  tea.Model
-	InSubMenu   bool
+	List       list.Model
+	Choice     *ActionType
+	Quitting   bool
+	Width      int
+	Height     int
+	SubProgram tea.Model
+	InSubMenu  bool
 }
 
 // NewModel creates a new menu model
@@ -25,6 +25,11 @@ func NewModel() Model {
 			Title:       "List Devices",
 			Description: "Browse available Bluetooth devices",
 			Value:       ListDevicesAction,
+		},
+		ui.GenericItem{
+			Title:       "Scan & Connect",
+			Description: "Scan for nearby devices and connect",
+			Value:       ScanAction,
 		},
 		ui.GenericItem{
 			Title:       "Connect",

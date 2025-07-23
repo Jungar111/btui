@@ -6,6 +6,8 @@ type BluetoothDevice struct {
 	Name       string
 	RawLine    string
 	Connected  bool
+	Paired     bool
+	RSSI       string
 }
 
 // DevicesMsg represents the result of scanning for devices

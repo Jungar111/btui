@@ -4,6 +4,7 @@ import (
 	"btui/cmd/connect"
 	"btui/cmd/disconnect"
 	"btui/cmd/listdevices"
+	"btui/cmd/scan"
 	"btui/internal/ui"
 
 	tea "github.com/charmbracelet/bubbletea"
@@ -14,7 +15,7 @@ func (m Model) Init() tea.Cmd {
 	return nil
 }
 
-// Update implements tea.Model  
+// Update implements tea.Model
 func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	// If we're in a sub-menu, handle it there
 	if m.InSubMenu && m.SubProgram != nil {
@@ -55,6 +56,12 @@ func (m Model) handleAction(action ActionType) (tea.Model, tea.Cmd) {
 	switch action {
 	case ListDevicesAction:
 		subModel := listdevices.NewModel()
+		m.SubProgram = subModel
+		m.InSubMenu = true
+		return m, subModel.Init()
+
+	case ScanAction:
+		subModel := scan.NewModel()
 		m.SubProgram = subModel
 		m.InSubMenu = true
 		return m, subModel.Init()
@@ -112,17 +119,22 @@ func shouldReturnToMenu(subProgram tea.Model) bool {
 	if listModel, ok := subProgram.(listdevices.Model); ok {
 		return listModel.Quitting || listModel.Choice != nil
 	}
-	
+
+	// Check if scan model has quit
+	if scanModel, ok := subProgram.(scan.Model); ok {
+		return scanModel.Quitting
+	}
+
 	// Check if connect model has quit or finished
 	if connectModel, ok := subProgram.(connect.Model); ok {
-		return connectModel.DevicePicker.Quitting || 
-			   (connectModel.State == connect.ShowResult && connectModel.Result != nil)
+		return connectModel.DevicePicker.Quitting ||
+			(connectModel.State == connect.ShowResult && connectModel.Result != nil)
 	}
-	
+
 	// Check if disconnect model has quit or finished
 	if disconnectModel, ok := subProgram.(disconnect.Model); ok {
-		return disconnectModel.DevicePicker.Quitting || 
-			   (disconnectModel.State == disconnect.ShowResult && disconnectModel.Result != nil)
+		return disconnectModel.DevicePicker.Quitting ||
+			(disconnectModel.State == disconnect.ShowResult && disconnectModel.Result != nil)
 	}
 
 	return false

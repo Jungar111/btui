@@ -5,6 +5,7 @@ import (
 	"btui/cmd/connect"
 	"btui/cmd/disconnect"
 	"btui/cmd/listdevices"
+	"btui/cmd/scan"
 	"btui/internal/menu"
 	"context"
 	"fmt"
@@ -34,6 +35,7 @@ func New() *cobra.Command {
 	rootCmd.AddCommand(listdevices.New())
 	rootCmd.AddCommand(connect.New())
 	rootCmd.AddCommand(disconnect.New())
+	rootCmd.AddCommand(scan.New())
 
 	return rootCmd
 }

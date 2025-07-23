@@ -2,6 +2,7 @@ package disconnect
 
 import (
 	"btui/internal/bluetooth"
+	"time"
 
 	tea "github.com/charmbracelet/bubbletea"
 )
@@ -68,7 +69,10 @@ func (m Model) updateDisconnecting(msg tea.Msg) (tea.Model, tea.Cmd) {
 		result := bluetooth.DisconnectResult(msg)
 		m.Result = &result
 		m.State = ShowResult
-		return m, nil
+		// Auto-quit after 2 seconds to show result then return to main menu
+		return m, tea.Tick(2*time.Second, func(time.Time) tea.Msg {
+			return tea.QuitMsg{}
+		})
 	}
 
 	return m, nil
@@ -82,6 +86,8 @@ func (m Model) updateShowResult(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "ctrl+c", "q", "enter", "esc":
 			return m, tea.Quit
 		}
+	case tea.QuitMsg:
+		return m, tea.Quit
 	}
 
 	return m, nil
