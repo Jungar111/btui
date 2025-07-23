@@ -8,7 +8,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// New creates a new cobra command for disconnecting from devices  
+// New creates a new cobra command for disconnecting from devices
 func New() *cobra.Command {
 	c := &cobra.Command{}
 	c.Use = "disconnect"

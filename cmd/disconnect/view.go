@@ -49,19 +49,19 @@ func (m Model) viewResult() string {
 
 	style := ui.SuccessStyle()
 	message := "✓ Successfully disconnected"
-	
+
 	if !m.Result.Success {
 		style = ui.ErrorStyle()
 		message = "✗ Failed to disconnect"
 	}
 
 	header := style.Render(fmt.Sprintf("%s from %s", message, deviceName))
-	
+
 	output := ""
 	if m.Result.Output != "" {
 		output = fmt.Sprintf("\nOutput: %s", m.Result.Output)
 	}
-	
+
 	if m.Result.Err != nil {
 		output += fmt.Sprintf("\nError: %s", m.Result.Err.Error())
 	}

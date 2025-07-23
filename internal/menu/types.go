@@ -12,6 +12,7 @@ type ActionType int
 
 const (
 	ListDevicesAction ActionType = iota
+	ScanAction
 	ConnectAction
 	DisconnectAction
 	QuitAction

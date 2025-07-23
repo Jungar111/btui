@@ -36,7 +36,6 @@ var (
 
 	PaginationStyle = lipgloss.NewStyle().
 			Faint(true)
-
 )
 
 // SuccessStyle returns the success style
@@ -46,7 +45,7 @@ func SuccessStyle() lipgloss.Style {
 		Bold(true)
 }
 
-// ErrorStyle returns the error style  
+// ErrorStyle returns the error style
 func ErrorStyle() lipgloss.Style {
 	return lipgloss.NewStyle().
 		Foreground(lipgloss.Color("9")).
