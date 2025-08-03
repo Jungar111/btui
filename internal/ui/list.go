@@ -2,19 +2,44 @@
 package ui
 
 import (
-	"fmt"
-	"io"
-	"strings"
-
+	"github.com/charmbracelet/bubbles/key"
 	"github.com/charmbracelet/bubbles/list"
-	tea "github.com/charmbracelet/bubbletea"
+	"github.com/charmbracelet/lipgloss"
 )
 
-// GenericItem represents any item that can be displayed in a list
+// DeviceItem represents a Bluetooth device that can be displayed in a list
+type DeviceItem struct {
+	title       string
+	description string
+	device      any // Store the actual device data
+}
+
+// Title implements list.Item
+func (i DeviceItem) Title() string { return i.title }
+
+// Description implements list.Item  
+func (i DeviceItem) Description() string { return i.description }
+
+// FilterValue implements list.Item
+func (i DeviceItem) FilterValue() string { return i.title }
+
+// Device returns the stored device data
+func (i DeviceItem) Device() any { return i.device }
+
+// NewDeviceItem creates a new device item
+func NewDeviceItem(title, description string, device any) DeviceItem {
+	return DeviceItem{
+		title:       title,
+		description: description,
+		device:      device,
+	}
+}
+
+// GenericItem represents any item that can be displayed in a list (kept for backward compatibility)
 type GenericItem struct {
 	Title       string
 	Description string
-	Value       interface{} // Store any data you need
+	Value       any
 }
 
 // FilterValue implements list.Item
@@ -22,54 +47,64 @@ func (i GenericItem) FilterValue() string {
 	return i.Title + " " + i.Description
 }
 
-// Custom item delegate for styling
-type itemDelegate struct{}
+// newDeviceDelegate creates an extended default delegate with status-specific colors
+func newDeviceDelegate() list.DefaultDelegate {
+	d := list.NewDefaultDelegate()
+	
+	// Customize selection colors to use terminal colors that fit our scheme
+	d.Styles.SelectedTitle = d.Styles.SelectedTitle.
+		Foreground(lipgloss.Color("15")).
+    BorderLeftForeground(lipgloss.Color("2")).
+		Bold(true).
+    Italic(true)
+	
+	d.Styles.SelectedDesc = d.Styles.SelectedDesc.
+    BorderLeftForeground(lipgloss.Color("2")).
+		Foreground(lipgloss.Color("7")) // Terminal white
 
-func (d itemDelegate) Height() int                             { return 1 }
-func (d itemDelegate) Spacing() int                            { return 0 }
-func (d itemDelegate) Update(_ tea.Msg, _ *list.Model) tea.Cmd { return nil }
-func (d itemDelegate) Render(w io.Writer, m list.Model, index int, listItem list.Item) {
-	i, ok := listItem.(GenericItem)
-	if !ok {
-		return
-	}
-
-	var str string
-	if i.Description != "" {
-		str = fmt.Sprintf("%s (%s)", i.Title, i.Description)
-	} else {
-		str = i.Title
-	}
-
-	// Check if this is a connected device by looking for the connection indicator
-	isConnected := strings.Contains(i.Title, "🔗") || strings.Contains(i.Description, "(Connected)")
-
-	fn := ItemStyle.Render
-	if index == m.Index() {
-		if isConnected {
-			fn = func(s ...string) string {
-				return ConnectedSelectedItemStyle.Render("> " + strings.Join(s, " "))
-			}
-		} else {
-			fn = func(s ...string) string {
-				return SelectedItemStyle.Render("> " + strings.Join(s, " "))
-			}
-		}
-	} else if isConnected {
-		fn = ConnectedItemStyle.Render
-	}
-
-	fmt.Fprint(w, fn(str))
+	
+	return d
 }
 
-// NewList creates a new generic list
+// NewList creates a new list with colored status indicators
 func NewList(items []list.Item, title string, width, height int) list.Model {
-	l := list.New(items, itemDelegate{}, width, height)
+	delegate := newDeviceDelegate()
+	l := list.New(items, delegate, width, height)
 	l.Title = title
 	l.SetShowStatusBar(false)
 	l.SetFilteringEnabled(true)
 	l.Styles.Title = TitleStyle
 	l.Styles.PaginationStyle = PaginationStyle
 	l.Styles.HelpStyle = HelpStyle
+	return l
+}
+
+// NewListWithKeys creates a new list with colored status indicators and custom key map
+func NewListWithKeys(items []list.Item, title string, width, height int, keyMap interface{}) list.Model {
+	delegate := newDeviceDelegate()
+	l := list.New(items, delegate, width, height)
+	l.Title = title
+	l.SetShowStatusBar(false)
+	l.SetFilteringEnabled(true)
+	l.Styles.Title = TitleStyle
+	l.Styles.PaginationStyle = PaginationStyle
+	l.Styles.HelpStyle = HelpStyle
+	l.AdditionalShortHelpKeys = func() []key.Binding {
+		if km, ok := keyMap.(interface{ ShortHelp() []key.Binding }); ok {
+			return km.ShortHelp()
+		}
+		return []key.Binding{}
+	}
+	l.AdditionalFullHelpKeys = func() []key.Binding {
+		if km, ok := keyMap.(interface{ FullHelp() [][]key.Binding }); ok {
+			fullHelp := km.FullHelp()
+			var allKeys []key.Binding
+			for _, row := range fullHelp {
+				allKeys = append(allKeys, row...)
+			}
+			return allKeys
+		}
+		return []key.Binding{}
+	}
 	return l
 }

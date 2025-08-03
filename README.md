@@ -6,12 +6,12 @@ A Terminal User Interface (TUI) for managing Bluetooth devices through bluetooth
 
 - **🔍 Real-time Device Discovery**: Find nearby Bluetooth devices that aren't paired yet
 - **📡 Live Signal Strength**: See RSSI values and device signal strength in real-time
-- **📱 Interactive Device Management**: Browse, connect, and disconnect from Bluetooth devices
-- **🔗 Connection Status Tracking**: Visual indicators for discovered (🔍), paired (📱), and connected (🔗) devices
-- **⚡ Multiple Interface Options**: Main menu interface or direct command access
-- **🎨 Clean Terminal UI**: Built with the Charm stack for a polished terminal experience
+- **📱 Smart Device Organization**: Three-tier sorting (Connected → Paired → Discovered)
+- **🎨 Terminal-Adaptive Interface**: Colors respect your terminal theme using Charm stack
+- **⚡ Direct Launch**: Opens directly to scanning interface for immediate productivity
 - **⌨️ Intuitive Controls**: Keyboard shortcuts for all major actions
 - **🛡️ Robust Parsing**: Handles bluetoothctl's ANSI colors and real-time output
+- **🔄 Position Preservation**: List maintains position during real-time updates
 
 ## Installation
 
@@ -45,16 +45,12 @@ go build -o dist/btui .
 
 ## Usage
 
-### Main Menu Interface (Recommended)
-Launch the interactive main menu:
+### Interactive Interface (Recommended)
+Launch the interactive scan interface directly:
 ```bash
 btui
 ```
-Navigate through options:
-- **List Devices** - Browse paired Bluetooth devices
-- **Scan & Connect** - Discover and connect to nearby devices
-- **Connect** - Connect to a paired device
-- **Disconnect** - Disconnect from a connected device
+The application launches directly into the scanning interface, providing immediate access to all Bluetooth device management features.
 
 ### Direct Command Access
 
@@ -96,16 +92,20 @@ Select and disconnect from a connected Bluetooth device:
 btui disconnect
 ```
 
-## Device Status Indicators
+## Device Status Display
 
-- 🔍 **Discovered** - Newly found device during real-time scanning (not paired yet)
-- 📱 **Paired** - Previously paired device (appears in `bluetoothctl devices`)
-- 🔗 **Connected** - Currently connected device
+Devices are organized in a prioritized list with colored status indicators:
 
-**Additional Information:**
-- **RSSI values** shown for discovered devices (e.g., "RSSI: -72")
-- **Device names** extracted from Bluetooth advertisements when available
-- **Real-time updates** as devices move in/out of range
+**Device Priority:**
+1. **Connected** - Currently active connections (green)
+2. **Paired** - Previously paired devices (yellow)
+3. **Discovered** - Newly found devices during scanning (cyan)
+
+**Status Information:**
+- **Signal Strength** - RSSI values shown for discovered devices (e.g., "RSSI: -72")
+- **MAC Addresses** - Device hardware addresses displayed in muted text
+- **Real-time Updates** - Live updates as devices appear, change, or disappear
+- **Smart Sorting** - Alphabetical sorting within each status category
 
 ## Commands
 
