@@ -22,12 +22,12 @@ type DiscoveredDevice struct {
 
 // DiscoveryScanner manages the bluetoothctl scanning process
 type DiscoveryScanner struct {
-	cmd             *exec.Cmd
-	ctx             context.Context
-	cancel          context.CancelFunc
-	discoveredDevs  map[string]DiscoveredDevice
-	mutex           sync.RWMutex
-	isScanning      bool
+	cmd            *exec.Cmd
+	ctx            context.Context
+	cancel         context.CancelFunc
+	discoveredDevs map[string]DiscoveredDevice
+	mutex          sync.RWMutex
+	isScanning     bool
 }
 
 // DiscoveryUpdateMsg contains discovered devices
@@ -51,7 +51,7 @@ func (ds *DiscoveryScanner) StartDiscovery() error {
 
 	ds.ctx, ds.cancel = context.WithCancel(context.Background())
 	ds.cmd = exec.CommandContext(ds.ctx, "bluetoothctl")
-	
+
 	stdin, err := ds.cmd.StdinPipe()
 	if err != nil {
 		return fmt.Errorf("failed to get stdin pipe: %w", err)
@@ -75,14 +75,14 @@ func (ds *DiscoveryScanner) StartDiscovery() error {
 	go func() {
 		defer stdin.Close()
 		scanner := bufio.NewScanner(stdout)
-		
+
 		// Regex patterns for parsing bluetoothctl output
 		// Handle ANSI escape codes that bluetoothctl may output
 		deviceRegex := regexp.MustCompile(`\[(?:NEW|CHG)\] Device ([A-Fa-f0-9:]{17}) (.+)`)
 		delDeviceRegex := regexp.MustCompile(`\[DEL\] Device ([A-Fa-f0-9:]{17})`)
 		rssiRegex := regexp.MustCompile(`RSSI: (?:0x[a-fA-F0-9]+ )?\((-?\d+)\)`)
 		nameRegex := regexp.MustCompile(`^([^R]+?)(?:\s+RSSI:|$)`)
-		// Strip ANSI color codes and control characters  
+		// Strip ANSI color codes and control characters
 		ansiRegex := regexp.MustCompile(`\x1b\[[0-9;]*[mK]|\r`)
 
 		for scanner.Scan() {
@@ -90,7 +90,7 @@ func (ds *DiscoveryScanner) StartDiscovery() error {
 			// Clean line of ANSI escape codes and control characters
 			cleanLine := ansiRegex.ReplaceAllString(line, "")
 			cleanLine = strings.TrimSpace(cleanLine)
-			
+
 			// Handle device deletion
 			if matches := delDeviceRegex.FindStringSubmatch(cleanLine); len(matches) >= 2 {
 				macAddress := matches[1]
@@ -99,12 +99,12 @@ func (ds *DiscoveryScanner) StartDiscovery() error {
 				ds.mutex.Unlock()
 				continue
 			}
-			
+
 			// Parse device discovery/change lines
 			if matches := deviceRegex.FindStringSubmatch(cleanLine); len(matches) >= 3 {
 				macAddress := matches[1]
 				deviceInfo := matches[2]
-				
+
 				// Extract RSSI if present (handle both hex and decimal formats)
 				rssi := 0
 				if rssiMatches := rssiRegex.FindStringSubmatch(deviceInfo); len(rssiMatches) >= 2 {
@@ -158,7 +158,7 @@ func (ds *DiscoveryScanner) StopDiscovery() error {
 	if ds.cancel != nil {
 		ds.cancel()
 	}
-	
+
 	if ds.cmd != nil && ds.cmd.Process != nil {
 		ds.cmd.Process.Kill()
 		ds.cmd.Wait()

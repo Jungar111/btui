@@ -6,7 +6,6 @@ import (
 	"btui/cmd/disconnect"
 	"btui/cmd/listdevices"
 	"btui/cmd/scan"
-	"btui/internal/menu"
 	"context"
 	"fmt"
 	"os"
@@ -21,8 +20,8 @@ func New() *cobra.Command {
 		Short: "A TUI for interacting with bluetoothctl",
 		Long:  "btui provides a terminal user interface for managing Bluetooth devices using bluetoothctl",
 		Run: func(cmd *cobra.Command, args []string) {
-			// Launch the main menu TUI
-			m := menu.NewModel()
+			// Launch the scan interface directly
+			m := scan.NewModel()
 			p := tea.NewProgram(m, tea.WithAltScreen())
 			if _, err := p.Run(); err != nil {
 				fmt.Printf("Error running program: %v\n", err)

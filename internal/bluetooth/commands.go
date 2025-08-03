@@ -37,8 +37,18 @@ func ConnectCmd(device BluetoothDevice) tea.Cmd {
 		}
 
 		// Check if connection was successful
-		if err == nil && strings.Contains(result.Output, "Connection successful") {
-			result.Success = true
+		// bluetoothctl can output various success messages:
+		// - "Connection successful"
+		// - "Device XX:XX:XX:XX:XX:XX connected"
+		// - Or just exit with code 0
+		lowerOutput := strings.ToLower(result.Output)
+		if err == nil && (strings.Contains(lowerOutput, "successful") || 
+		                  strings.Contains(lowerOutput, "connected") ||
+		                  result.Output == "") {
+			// Also ensure it's not an error message containing "connected"
+			if !strings.Contains(lowerOutput, "failed") && !strings.Contains(lowerOutput, "error") {
+				result.Success = true
+			}
 		}
 
 		return ConnectMsg(result)
@@ -73,8 +83,18 @@ func DisconnectCmd(device BluetoothDevice) tea.Cmd {
 		}
 
 		// Check if disconnection was successful
-		if err == nil && strings.Contains(result.Output, "Successful disconnected") {
-			result.Success = true
+		// bluetoothctl can output various success messages:
+		// - "Successful disconnected"
+		// - "Device XX:XX:XX:XX:XX:XX disconnected"
+		// - Or just exit with code 0
+		lowerOutput := strings.ToLower(result.Output)
+		if err == nil && (strings.Contains(lowerOutput, "successful") || 
+		                  strings.Contains(lowerOutput, "disconnected") ||
+		                  result.Output == "") {
+			// Also ensure it's not an error message containing "disconnected"
+			if !strings.Contains(lowerOutput, "failed") && !strings.Contains(lowerOutput, "error") {
+				result.Success = true
+			}
 		}
 
 		return DisconnectMsg(result)
@@ -149,5 +169,15 @@ type TickMsg time.Time
 func TickCmd() tea.Cmd {
 	return tea.Tick(time.Millisecond*500, func(t time.Time) tea.Msg {
 		return TickMsg(t)
+	})
+}
+
+// UIUpdateMsg is sent to trigger UI refresh during operations
+type UIUpdateMsg struct{}
+
+// UIUpdateCmd returns a command that sends periodic UI updates during operations
+func UIUpdateCmd() tea.Cmd {
+	return tea.Tick(time.Millisecond*200, func(t time.Time) tea.Msg {
+		return UIUpdateMsg{}
 	})
 }
